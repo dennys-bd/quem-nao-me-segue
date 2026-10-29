@@ -358,6 +358,11 @@
       border-color: var(--warn)
     }
 
+    .act.rm:hover {
+      border-color: var(--warn);
+      color: var(--warn)
+    }
+
     details {
       background: var(--surface);
       border: 1px solid var(--line);
@@ -586,7 +591,7 @@
           if (state.view === "fans") { act.remove(); }
           else {
             const keeping = state.view === "not";
-            act.textContent = keeping ? "Manter" : "Remover";
+            act.textContent = keeping ? "Manter" : "Desmarcar";
             act.title = keeping ? "Não vou deixar de seguir este perfil" : "Voltar este perfil para a lista de revisão";
             act.addEventListener("click", () => {
               keeping ? state.keep.add(u) : state.keep.delete(u);
@@ -596,6 +601,19 @@
               const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
               setTimeout(render, reduce ? 0 : 500);
             });
+            if (keeping) {
+              const rm = document.createElement("button");
+              rm.type = "button"; rm.className = "act rm"; rm.textContent = "Remover";
+              rm.title = "Já deixei de seguir: tirar este perfil da memória";
+              rm.addEventListener("click", () => {
+                state.following.delete(u);
+                if (!state.sample) save();
+                rm.disabled = true; act.disabled = true; li.classList.add("fading");
+                const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+                setTimeout(render, reduce ? 0 : 500);
+              });
+              li.append(rm);
+            }
           }
           list.append(li);
         });
