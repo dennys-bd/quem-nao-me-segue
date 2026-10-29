@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    [hidden] {
+      display: none !important
+    }
+
+    body {
+      margin: 0
+    }
+  </style>
+  <title>Quem Não Me Segue</title>
+  <meta name="claude:viewport-fit-sides" content="cover">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    /* Layout: coluna única estreita — cabeçalho, zona de upload, placar, abas e lista de perfis */
+    :root {
+      --bg: #f6f5f2;
+      --surface: #ffffff;
+      --ink: #1d1b22;
+      --muted: #6c6875;
+      --line: #e3e0e8;
+      --accent: #0f7a6c;
+      --accent-soft: #dff1ed;
+      --warn: #b4532a;
+      --f-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+      --f-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
+      --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #141317;
+        --surface: #1d1c21;
+        --ink: #ecebf0;
+        --muted: #9a96a3;
+        --line: #2e2c34;
+        --accent: #4cc7b2;
+        --accent-soft: #16312c;
+        --warn: #e58a5f;
+        color-scheme: dark
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #141317;
+      --surface: #1d1c21;
+      --ink: #ecebf0;
+      --muted: #9a96a3;
+      --line: #2e2c34;
+      --accent: #4cc7b2;
+      --accent-soft: #16312c;
+      --warn: #e58a5f;
+      color-scheme: dark
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.55 var(--f-body);
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      padding-block: 32px 48px
+    }
+
+    .wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px
+    }
+
+    h1 {
+      font: 800 clamp(30px, 7vw, 44px)/1.05 var(--f-display);
+      letter-spacing: -.02em;
+      margin: 0;
+      text-wrap: balance
+    }
+
+    .lede {
+      color: var(--muted);
+      margin: 8px 0 0;
+      max-width: 58ch
+    }
+
+    .lede a,
+    details a {
+      color: var(--accent);
+      font-weight: 600
+    }
+
+    code,
+    .mono {
+      font-family: var(--f-mono);
+      font-size: .88em
+    }
+
+    .drop {
+      border: 1.5px dashed var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+      transition: border-color .15s, background .15s
+    }
+
+    .drop.over {
+      border-color: var(--accent);
+      background: var(--accent-soft)
+    }
+
+    .drop strong {
+      font-family: var(--f-display);
+      font-weight: 600;
+      font-size: 18px
+    }
+
+    .drop p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    .btn {
+      font: 600 14px var(--f-body);
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 16px;
+      cursor: pointer;
+      background: var(--accent);
+      color: var(--bg)
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--line)
+    }
+
+    .btn:focus-visible,
+    input:focus-visible,
+    .tab:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px
+    }
+
+    .status {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0
+    }
+
+    .status.err {
+      color: var(--warn)
+    }
+
+    .score {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden
+    }
+
+    .score div {
+      background: var(--surface);
+      padding: 12px 14px
+    }
+
+    .score b {
+      display: block;
+      font: 800 24px var(--f-display);
+      font-variant-numeric: tabular-nums
+    }
+
+    .score span {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .tab {
+      font: 600 14px var(--f-body);
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 14px;
+      cursor: pointer
+    }
+
+    .tab[aria-selected="true"] {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink)
+    }
+
+    .tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .tools input {
+      flex: 1 1 200px;
+      min-width: 0;
+      font: 15px var(--f-body);
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink)
+    }
+
+    .sample {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--warn);
+      text-transform: uppercase;
+      letter-spacing: .06em
+    }
+
+    ol.list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid var(--line)
+    }
+
+    .list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 2px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .list .n {
+      width: 3ch;
+      text-align: right;
+      color: var(--muted);
+      font: 12px var(--f-mono);
+      font-variant-numeric: tabular-nums
+    }
+
+    .list a {
+      font-family: var(--f-mono);
+      color: var(--ink);
+      text-decoration: none;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      flex: 1
+    }
+
+    .list a:hover {
+      color: var(--accent);
+      text-decoration: underline
+    }
+
+    .list .go {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 16px 0
+    }
+
+    .av {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      flex: none;
+      display: grid;
+      place-items: center;
+      font: 600 15px var(--f-display);
+      color: var(--bg);
+      text-transform: uppercase
+    }
+
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap
+    }
+
+    .pager span {
+      font-size: 14px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums
+    }
+
+    .btn:disabled {
+      opacity: .4;
+      cursor: default
+    }
+
+    .list li {
+      transition: opacity .45s ease
+    }
+
+    .list li.fading {
+      opacity: .25
+    }
+
+    .act {
+      font: 600 13px var(--f-body);
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 5px 12px;
+      cursor: pointer;
+      flex: none
+    }
+
+    .act:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .act:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px
+    }
+
+    .act.go-link {
+      border: 0;
+      color: var(--muted);
+      padding: 5px 4px
+    }
+
+    .btn.danger {
+      color: var(--warn);
+      border-color: var(--warn)
+    }
+
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 16px
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600
+    }
+
+    details ol {
+      margin: 10px 0 0;
+      padding-left: 20px;
+      color: var(--muted)
+    }
+
+    .foot {
+      font-size: 13px;
+      color: var(--muted)
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        transition: none !important
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Quem não te segue de volta</h1>
+      <p class="lede">Solte aqui o <code>.zip</code> que o Instagram te mandou (ou os arquivos
+        <code>followers_1.json</code> e <code>following.json</code>). Tudo é lido no seu navegador; nada é enviado para
+        lugar nenhum.</p>
+    </header>
+
+    <details>
+      <summary>Ainda não tem o arquivo? Veja como pedir</summary>
+      <ol>
+        <li>Abra <a href="https://accountscenter.instagram.com/info_and_permissions/dyi" target="_blank"
+            rel="noopener">Baixar suas informações ↗</a> na Central de Contas (no app: Perfil → menu ☰ → Central de
+          Contas → Suas informações e permissões).</li>
+        <li>Escolha só <b>Seguidores e seguindo</b>, formato <b>JSON</b>, período <b>Desde o início</b>.</li>
+        <li>Baixe o zip pelo link que chega no e-mail e solte abaixo.</li>
+      </ol>
+    </details>
+
+    <label class="drop" id="drop" for="file">
+      <strong>Arraste o arquivo aqui</strong>
+      <p>Aceita .zip, .json ou .html da exportação "Seguidores e seguindo".</p>
+      <span class="btn" role="button">Escolher arquivo</span>
+      <input id="file" type="file" accept=".zip,.json,.html" multiple hidden>
+    </label>
+    <div class="tools">
+      <p class="status" id="status" aria-live="polite"></p>
+      <button class="btn ghost" id="clear" hidden>Apagar dados salvos</button>
+    </div>
+
+    <section class="score" aria-label="Resumo">
+      <div><b id="cFollowing">0</b><span>Você segue</span></div>
+      <div><b id="cFollowers">0</b><span>Te seguem</span></div>
+      <div><b id="cNot">0</b><span>Para revisar</span></div>
+    </section>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" id="tab-not" role="tab" aria-selected="true" data-view="not">Não te seguem de volta</button>
+      <button class="tab" id="tab-fans" role="tab" aria-selected="false" data-view="fans">Você não segue de
+        volta</button>
+      <button class="tab" id="tab-keep" role="tab" aria-selected="false" data-view="keep">Mantidos (<span
+          id="cKeep">0</span>)</button>
+    </div>
+
+    <div class="tools">
+      <input id="q" type="search" placeholder="Filtrar por nome de usuário" aria-label="Filtrar">
+      <button class="btn ghost" id="copy">Copiar lista</button>
+      <button class="btn ghost danger" id="clearKeep" hidden>Limpar mantidos</button>
+      <span class="sample" id="sampleTag">Dados de exemplo</span>
+    </div>
+
+    <ol class="list" id="list"></ol>
+    <nav class="pager" aria-label="Paginação">
+      <button class="btn ghost" id="prev">← Anterior</button>
+      <span id="pageInfo"></span>
+      <button class="btn ghost" id="next">Próxima →</button>
+    </nav>
+
+    <p class="foot">Contas desativadas ou que trocaram de nome podem aparecer na lista mesmo seguindo você. Confira o
+      perfil antes de deixar de seguir.</p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    (() => {
+      const $ = id => document.getElementById(id);
+      const state = {
+        followers: new Set(["ana.lima", "carol_dev", "joaopedro", "recife.cafe", "marina.s"]),
+        following: new Set(["ana.lima", "carol_dev", "joaopedro", "bruno.f", "loja.oficial", "tia.rosa", "dj_marcos"]),
+        view: "not", sample: true, page: 0
+      };
+      const PER_PAGE = 10;
+      const KEY = "qnms:v1";
+      const SAMPLE = { followers: state.followers, following: state.following };
+      function save() {
+        try { localStorage.setItem(KEY, JSON.stringify({ followers: [...state.followers], following: [...state.following], at: Date.now() })); return true; }
+        catch (e) { return false; }
+      }
+      function load() {
+        try {
+          const d = JSON.parse(localStorage.getItem(KEY) || "null");
+          if (d && Array.isArray(d.followers) && Array.isArray(d.following)) return d;
+        } catch (e) { }
+        return null;
+      }
+      const KEEP_KEY = "qnms:keep:v1";
+      state.keep = new Set();
+      try { const k = JSON.parse(localStorage.getItem(KEEP_KEY) || "[]"); if (Array.isArray(k)) state.keep = new Set(k); } catch (e) { }
+      function saveKeep() { try { localStorage.setItem(KEEP_KEY, JSON.stringify([...state.keep])); } catch (e) { } }
+      const fmtDate = t => new Date(t).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+      const hue = u => [...u].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+
+      const norm = u => (u || "").trim().replace(/^@/, "").toLowerCase();
+      const fromHref = h => { const m = /instagram\.com\/(?:_u\/)?([^/?#]+)/i.exec(h || ""); return m ? m[1] : ""; };
+
+      function collectJson(data, out) {
+        const walk = node => {
+          if (Array.isArray(node)) { node.forEach(walk); return; }
+          if (node && typeof node === "object") {
+            if (Array.isArray(node.string_list_data)) {
+              const s = node.string_list_data[0] || {};
+              const u = norm(s.value || node.title || fromHref(s.href));
+              if (u) out.add(u);
+              return;
+            }
+            Object.values(node).forEach(walk);
+          }
+        };
+        walk(data);
+      }
+      function collectHtml(text, out) {
+        const doc = new DOMParser().parseFromString(text, "text/html");
+        doc.querySelectorAll('a[href*="instagram.com"]').forEach(a => {
+          const u = norm(fromHref(a.getAttribute("href")) || a.textContent);
+          if (u) out.add(u);
+        });
+      }
+      function kind(name) {
+        const base = name.split("/").pop().toLowerCase();
+        if (/^followers(_\d+)?\.(json|html)$/.test(base)) return "followers";
+        if (/^following\.(json|html)$/.test(base)) return "following";
+        return null;
+      }
+      async function ingest(name, text, sets) {
+        const k = kind(name); if (!k) return false;
+        if (name.toLowerCase().endsWith(".json")) collectJson(JSON.parse(text), sets[k]);
+        else collectHtml(text, sets[k]);
+        return true;
+      }
+
+      async function handle(files) {
+        const sets = { followers: new Set(), following: new Set() };
+        let hits = 0;
+        setStatus("Lendo arquivos…");
+        try {
+          for (const f of files) {
+            if (f.name.toLowerCase().endsWith(".zip")) {
+              const zip = await JSZip.loadAsync(f);
+              for (const entry of Object.values(zip.files)) {
+                if (entry.dir || !kind(entry.name)) continue;
+                if (await ingest(entry.name, await entry.async("string"), sets)) hits++;
+              }
+            } else if (await ingest(f.name, await f.text(), sets)) hits++;
+          }
+        } catch (e) {
+          return setStatus("Não consegui ler esse arquivo. Confira se é a exportação do Instagram e tente de novo.", true);
+        }
+        if (!sets.followers.size || !sets.following.size) {
+          const miss = !sets.followers.size && !sets.following.size ? "seguidores nem de quem você segue"
+            : !sets.followers.size ? "seguidores (followers_1)" : "quem você segue (following)";
+          return setStatus(`Não encontrei a lista de ${miss}. Envie o zip completo ou os dois arquivos juntos.`, true);
+        }
+        Object.assign(state, sets, { sample: false, page: 0 });
+        const saved = save();
+        setStatus(`Pronto: ${hits} arquivo${hits > 1 ? "s" : ""} lido${hits > 1 ? "s" : ""}.` + (saved ? " Dados salvos neste navegador." : ""));
+        render();
+      }
+
+      function setStatus(msg, err) { const s = $("status"); s.textContent = msg; s.classList.toggle("err", !!err); }
+
+      function current() {
+        const sort = arr => arr.sort((x, y) => x.localeCompare(y));
+        if (state.view === "keep") return sort([...state.keep]);
+        if (state.view === "not") return sort([...state.following].filter(u => !state.followers.has(u) && !state.keep.has(u)));
+        return sort([...state.followers].filter(u => !state.following.has(u)));
+      }
+
+      function render() {
+        const notBack = [...state.following].filter(u => !state.followers.has(u) && !state.keep.has(u)).length;
+        $("cKeep").textContent = state.keep.size;
+        const ck = $("clearKeep"); ck.hidden = !(state.view === "keep" && state.keep.size); ck.textContent = "Limpar mantidos"; ck.dataset.armed = "";
+        $("cFollowing").textContent = state.following.size.toLocaleString("pt-BR");
+        $("cFollowers").textContent = state.followers.size.toLocaleString("pt-BR");
+        $("cNot").textContent = notBack.toLocaleString("pt-BR");
+        $("sampleTag").hidden = !state.sample;
+        $("clear").hidden = state.sample;
+        const q = norm($("q").value);
+        const items = current().filter(u => !q || u.includes(q));
+        const pages = Math.max(1, Math.ceil(items.length / PER_PAGE));
+        state.page = Math.min(state.page, pages - 1);
+        $("prev").disabled = state.page === 0;
+        $("next").disabled = state.page >= pages - 1;
+        $("pageInfo").textContent = items.length ? `Página ${state.page + 1} de ${pages} · ${items.length} perfis` : "";
+        const list = $("list"); list.innerHTML = "";
+        if (!items.length) { const li = document.createElement("li"); li.className = "empty"; li.textContent = q ? "Nenhum usuário com esse filtro." : state.view === "keep" ? "Nenhum perfil marcado para manter. Use o botão Manter na lista de revisão." : "Ninguém nessa lista."; list.append(li); return; }
+        const start = state.page * PER_PAGE;
+        items.slice(start, start + PER_PAGE).forEach((u, i) => {
+          const li = document.createElement("li");
+          li.innerHTML = `<span class="n">${start + i + 1}</span><span class="av" aria-hidden="true"></span><a target="_blank" rel="noopener"></a><button class="act" type="button"></button>`;
+          const av = li.querySelector(".av"); av.textContent = u.replace(/[^a-z0-9]/g, "")[0] || "?"; av.style.background = `hsl(${hue(u)} 45% 45%)`;
+          const a = li.querySelector("a"); a.href = `https://www.instagram.com/${encodeURIComponent(u)}/`; a.textContent = "@" + u;
+          const act = li.querySelector(".act");
+          if (state.view === "fans") { act.remove(); }
+          else {
+            const keeping = state.view === "not";
+            act.textContent = keeping ? "Manter" : "Remover";
+            act.title = keeping ? "Não vou deixar de seguir este perfil" : "Voltar este perfil para a lista de revisão";
+            act.addEventListener("click", () => {
+              keeping ? state.keep.add(u) : state.keep.delete(u);
+              saveKeep();
+              act.disabled = true; li.classList.add("fading");
+              $("cKeep").textContent = state.keep.size;
+              const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+              setTimeout(render, reduce ? 0 : 500);
+            });
+          }
+          list.append(li);
+        });
+      }
+
+      const drop = $("drop");
+      ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+      ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+      drop.addEventListener("drop", e => handle([...e.dataTransfer.files]));
+      $("file").addEventListener("change", e => { handle([...e.target.files]); e.target.value = ""; });
+      $("q").addEventListener("input", () => { state.page = 0; render(); });
+      $("prev").addEventListener("click", () => { state.page--; render(); });
+      $("next").addEventListener("click", () => { state.page++; render(); });
+      document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+        state.view = t.dataset.view; state.page = 0;
+        document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", x === t));
+        render();
+      }));
+      $("copy").addEventListener("click", () => {
+        const text = current().map(u => "@" + u).join("\n");
+        const btn = $("copy");
+        navigator.clipboard.writeText(text).then(() => { btn.textContent = "Copiado"; setTimeout(() => btn.textContent = "Copiar lista", 1500); })
+          .catch(() => setStatus("Não deu para copiar automaticamente. Selecione a lista e copie manualmente.", true));
+      });
+      $("clearKeep").addEventListener("click", () => {
+        const b = $("clearKeep");
+        if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = `Confirmar: tirar ${state.keep.size} perfis`; return; }
+        state.keep.clear(); saveKeep(); state.page = 0;
+        setStatus("Lista de mantidos limpa.");
+        render();
+      });
+      $("clear").addEventListener("click", () => {
+        try { localStorage.removeItem(KEY); } catch (e) { }
+        Object.assign(state, { followers: SAMPLE.followers, following: SAMPLE.following, sample: true, page: 0 });
+        setStatus("Dados apagados deste navegador.");
+        render();
+      });
+      const stored = load();
+      if (stored) {
+        Object.assign(state, { followers: new Set(stored.followers), following: new Set(stored.following), sample: false });
+        setStatus(`Usando os dados carregados em ${fmtDate(stored.at)}. Envie uma exportação nova para atualizar.`);
+      }
+      render();
+    })();
+  </script>
+
+</body>
+
+</html>
